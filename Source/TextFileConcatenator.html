@@ -1,0 +1,96 @@
+<html>
+<body>
+
+<div id="divUi">
+
+	<h3>Text File Concatenator</h3>
+
+	<p>
+		Upload a .TAR file containing a group of text files
+		to have them concatenated into a single larger text file.
+	</p>
+
+	<div>
+		<label>Text to Insert between Files:</label>
+		<input id="inputTextToInsertBetweenFiles" value="\n\n"></input>
+	</div>
+
+	<div>
+		<label>Load TAR File of Text Files to Concatenate:</label>
+		<input type="file" onchange="inputFile_Changed(this)"></input>
+	</div>
+
+	<div>
+		<label>Concatenated Text:</label>
+		<br />
+		<textarea id="textareaTextConcatenated" cols="40" rows="10"></textarea>
+	</div>
+
+</div>
+
+<script type="text/javascript" src="TarFileExplorer/Source/TarFile/TarFile.js"></script>
+<script type="text/javascript" src="TarFileExplorer/Source/TarFile/TarFileEntry.js"></script>
+<script type="text/javascript" src="TarFileExplorer/Source/TarFile/TarFileEntryHeader.js"></script>
+<script type="text/javascript" src="TarFileExplorer/Source/TarFile/TarFileTypeFlag.js"></script>
+<script type="text/javascript" src="TarFileExplorer/Source/Utility/ByteStream.js"></script>
+
+<script type="text/javascript">
+
+function inputFile_Changed(inputFile)
+{
+	var file = inputFile.files[0];
+	if (file != null)
+	{
+		var fileReader = new FileReader();
+
+		fileReader.onload = (event) =>
+		{
+			var tarFileAsBinaryString =
+				event.target.result;
+
+			var tarFileAsBytes =
+				tarFileAsBinaryString
+					.split("")
+					.map(x => x.charCodeAt(0) );
+
+			var tfe = ThisCouldBeBetter.TarFileExplorer;
+			var TarFile = tfe.TarFile;
+			var tarFile = TarFile.fromNameAndBytes("", tarFileAsBytes);
+
+
+			var tarFileEntries = tarFile.entries;
+			var textPassagesToConcatenate =
+				tarFileEntries.map
+				(
+					x => x.dataAsBytes.map
+					(
+						y => String.fromCharCode(y)
+					).join("")
+				);
+
+			var d = document;
+
+			var inputTextToInsertBetweenFiles =
+				d.getElementById("inputTextToInsertBetweenFiles");
+			var textToInsertBetweenFiles =
+				inputTextToInsertBetweenFiles.value;
+			textToInsertBetweenFiles =
+				textToInsertBetweenFiles
+					.split("\\n").join("\n");
+
+			var textConcatenated =
+				textPassagesToConcatenate.join(textToInsertBetweenFiles);
+
+			var textareaTextConcatenated =
+				d.getElementById("textareaTextConcatenated");
+			textareaTextConcatenated.value = textConcatenated;
+		};
+
+		fileReader.readAsBinaryString(file);
+	}
+}
+
+</script>
+
+</body>
+</html>
